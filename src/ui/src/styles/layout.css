@@ -1,0 +1,231 @@
+.app-layout {
+  display: grid;
+  grid-template-columns: 280px 6px 1fr 6px 320px;
+  height: 100vh;
+  background-color: #f5f5f5;
+  color: #1d1d1f;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+.sidebar,
+.secondary-panel {
+  padding: 1rem;
+  background-color: #fafafa;
+  border-right: 1px solid #d9d9d9;
+  overflow-y: auto;
+}
+
+.secondary-panel {
+  border-right: none;
+  border-left: 1px solid #d9d9d9;
+}
+
+.main-section {
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.resize-handle {
+  background-color: #ededed;
+  cursor: col-resize;
+  position: relative;
+  user-select: none;
+  touch-action: none;
+}
+
+.resize-handle::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1px;
+  background-color: #cfcfcf;
+}
+
+.panel {
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.panel h3,
+.panel h2 {
+  margin: 0 0 0.75rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.panel-header {
+  margin-bottom: 0.75rem;
+}
+
+.task-meta {
+  display: flex;
+  gap: 1rem;
+  color: #555;
+  font-size: 0.85rem;
+}
+
+button.primary {
+  background-color: #1d1d1f;
+  color: #ffffff;
+  border: 1px solid #1d1d1f;
+  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+}
+
+button.primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #cfcfcf;
+  background-color: #fff;
+  color: #1d1d1f;
+}
+
+.task-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.task-card {
+  padding: 0.75rem;
+  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+  background-color: #fff;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.task-card.active {
+  border-color: #1d1d1f;
+}
+
+.task-card.completed {
+  border-color: #cfcfcf;
+  background-color: #f2f2f2;
+  color: #6b6b6b;
+}
+
+.task-card.completed .completion-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(238, 238, 238, 0.88);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #4a4a4a;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease-in-out;
+}
+
+.task-card.completed:hover .completion-overlay {
+  opacity: 1;
+}
+
+.badge {
+  border-radius: 9999px;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.75rem;
+  text-transform: capitalize;
+  border: 1px solid #cfcfcf;
+}
+
+.badge-high {
+  background-color: #ffecec;
+}
+
+.badge-medium {
+  background-color: #fff7e6;
+}
+
+.badge-low {
+  background-color: #eef9f0;
+}
+
+.log-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.log-item {
+  border-left: 3px solid #1d1d1f;
+  padding-left: 0.8rem;
+  margin-bottom: 0.8rem;
+}
+
+.log-item time {
+  font-size: 0.75rem;
+  color: #555;
+}
+
+.checklist {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.checklist li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.checklist button {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  border: 1px solid #cfcfcf;
+  background-color: #fff;
+  color: #1d1d1f;
+}
+
+.json-editor {
+  min-height: 160px;
+  font-family: 'JetBrains Mono', monospace;
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 0.6rem;
+}
+
+.creation-form {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.task-meta-line {
+  color: #555;
+  font-size: 0.8rem;
+}

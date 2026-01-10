@@ -1,0 +1,16 @@
+# Root ignores
+node_modules/
+dist/
+logs/
+coverage/
+.DS_Store
+
+# Editor / tooling
+.env
+.env.local
+.idea/
+.vscode/
+
+# Build outputs
+src/ui/dist/
+*.log

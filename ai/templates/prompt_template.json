@@ -1,0 +1,15 @@
+{
+  "$schema": "../../schemas/prompt_template.json",
+  "id": "prompt_task_creation_v1",
+  "description": "Guides AI agents through creating a new task module from templates under the execution contract.",
+  "body": "You are an AI engineering assistant.\n1. Read ai/AI_TASK_MONITOR_CONTRACT.md and ai/TO-DO.md.\n2. Decide whether to instantiate a new task or update existing files.\n3. Use ai/tasks/templates as the canonical source for task module structures.\n4. Ensure all Markdown begins with a Machine Summary Block before committing.",
+  "tags": [
+    "task",
+    "template",
+    "governance"
+  ],
+  "summary": {
+    "file": "ai/templates/prompt_template.json",
+    "purpose": "Provides a ready-to-validate prompt configuration for generating new AI task modules."
+  }
+}

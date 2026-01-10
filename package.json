@@ -1,0 +1,26 @@
+{
+  "name": "ai-task-monitor",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "schema:lint": "node scripts/validate_schemas.mjs",
+    "test": "tsx --tsconfig tsconfig.json src/tests/run-all-tests.ts",
+    "generate:task": "tsx --tsconfig tsconfig.json scripts/generate_task_from_template.ts",
+    "dev": "tsx --tsconfig tsconfig.json src/server/start.ts",
+    "ui:dev": "npm --prefix src/ui run dev",
+    "ui:build": "npm --prefix src/ui run build"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.0.0",
+    "@types/supertest": "^2.0.16",
+    "supertest": "^6.3.3",
+    "tsx": "^4.7.0",
+    "typescript": "^5.6.0"
+  }
+}
