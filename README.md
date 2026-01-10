@@ -9,9 +9,13 @@ Every AI agent working in this repo reads it's `ai/AI_*_CONTRACT.md`, follows it
 2. `npm run ui:dev` launches the Vite/React dashboard where you can select tasks, toggle checklist items, edit contracts/prompts, and inspect logs without editing files manually.
 3. Agents (human or AI) follow the active task checklist, append entries to `progress.ndjson`, and keep the repo authoritative for the upcoming read-only website viewer.
 
-![alt text](docs/img/dashboard-mvp.png)
 
 ![alt text](docs/img/ai-folder-mvp.png)
+
+               ↓ Turns into
+
+![alt text](docs/img/dashboard-mvp.png)
+
 
 ## Setup
 - `npm install` at repo root (installs backend + script deps).  
