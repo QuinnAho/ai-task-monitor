@@ -10,9 +10,10 @@ Every AI agent working in this repo reads it's `ai/AI_*_CONTRACT.md`, follows it
 3. Agents (human or AI) follow the active task checklist, append entries to `progress.ndjson`, and keep the repo authoritative for the upcoming read-only website viewer.
 
 
+
 ![alt text](docs/img/ai-folder-mvp.png)
 
-               ↓ Turns into
+↓ Turns into
 
 ![alt text](docs/img/dashboard-mvp.png)
 
