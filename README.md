@@ -13,7 +13,7 @@ Every AI agent working in this repo reads it's `ai/AI_*_CONTRACT.md`, follows it
 
 ![alt text](docs/img/ai-folder-mvp.png)
 
-↓ Turns into
+Turns into ↓ 
 
 ![alt text](docs/img/dashboard-mvp.png)
 
