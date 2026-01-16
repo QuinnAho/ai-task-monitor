@@ -3,7 +3,7 @@
     "title": "Structured Prompt Generators",
     "description": "Implement helper workflows that emit validated prompts/checklists from reusable blueprints for Claude/Codex agents, ensuring outputs comply with schemas and logging rules.",
     "created": "2026-01-10T02:34:00Z",
-    "status": "in_progress",
+    "status": "completed",
     "priority": "high",
     "inputs": {
       "files": [

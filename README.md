@@ -17,3 +17,9 @@ Every AI agent working in this repo reads it's `ai/AI_*_CONTRACT.md`, follows it
 - `npm install` at repo root (installs backend + script deps).  
 - `npm run dev` starts the backend on http://localhost:3000.  
 - `npm run ui:dev` (in another terminal) launches the Vite client on http://localhost:5173 with `/api` proxied to the backend.
+
+## Feature Planning Workflow
+1. Run `npm run init:workflow` after cloning to guarantee the master prompt + `task_creation` blueprint exist.
+2. Use the Feature Planner panel (or `POST /api/features/plan`) to produce the feasibility review + task-module outline for every new request.
+3. After approval, use the Create Task form or `/api/tasks` endpoint (which auto-assigns the next `TASK_###`) and execute the resulting checklist with the Prompt Editor/CLI helpers.
+4. See `docs/feature_workflow.md` for the full feasibility-first protocol, and `docs/task_reordering.md` for how the UI/CLI manage `ai/tasks/order.json` (the backlog priority stack).

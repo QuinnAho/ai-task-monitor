@@ -25,10 +25,11 @@
 
   ## 3. Source of Truth
   Each task lives under `ai/tasks/{task_id}/` with:
-  - `task.json` — definition + acceptance criteria.
-  - `checklist.md` — ordered steps with `[ ]` / `[x]`.
-  - `progress.ndjson` — append-only log.
+  - `task.json` – definition + acceptance criteria.
+  - `checklist.md` – ordered steps with `[ ]` / `[x]`.
+  - `progress.ndjson` – append-only log.
   `ai/tasks/current_index.json` identifies the active task.
+  `ai/tasks/order.json` tracks the priority stack (top entry executes next); any reordering must update this file and be logged in the relevant task’s `progress.ndjson`.
 
   ## 4. Machine Summary Blocks
   Every new Markdown, CMake, C++/header, Python, or YAML file must start with a JSON summary block. If missing, add it

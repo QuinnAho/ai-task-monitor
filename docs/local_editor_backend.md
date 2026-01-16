@@ -6,25 +6,28 @@
 ## 1. Overview
 - **Purpose:** Provide a local REST interface for task CRUD operations, leveraging the FileAccess module for deterministic filesystem changes.
 - **Stack:** Express 4 + TypeScript (`src/server/app.ts`) with routers under `src/server/routes/`.
-- **Key features:** Task listing/detail, task creation from templates, checklist toggles, log append/fetch, template listing, contract/prompt regeneration.
+- **Key features:** Task listing/detail, task creation from templates, checklist toggles, log append/fetch, template listing, contract/prompt regeneration, prompt blueprint generation, and feature-planning helpers.
 
 ## 2. Routes
 | Method & Path | Description |
 | --- | --- |
 | `GET /health` | Simple readiness probe. |
-| `GET /api/tasks` | Lists task metadata by reading `ai/tasks/*/task.json`. |
+| `GET /api/tasks` | Lists task metadata (ordered via `ai/tasks/order.json`). |
 | `GET /api/tasks/:taskId` | Returns `task.json`, `checklist.md`, and `progress.ndjson` contents. |
-| `POST /api/tasks` | Bodies validated with Zod; clones template files and updates fields. |
+| `POST /api/tasks` | Clones template files, auto-assigns the next `TASK_###`, and applies the provided title/description/priority. |
 | `PATCH /api/tasks/:taskId/checklist` | Toggles a checklist line, ensuring `[x]/[ ]` substitution. |
+| `PATCH /api/tasks/order` | Persists a new ordering array (validated against existing IDs) to `ai/tasks/order.json`. |
 | `POST /api/tasks/:taskId/logs` | Appends NDJSON entries validated against `schemas/progress_event.json`. |
 | `GET /api/checklists/:taskId` | Fetches raw checklist text. |
 | `GET /api/logs/:taskId` | Returns parsed NDJSON log entries. |
 | `GET /api/templates` | Lists available task templates. |
-| `POST /api/contracts/regenerate` | Writes new contract content to `ai/AI_TASK_MONITOR_CONTRACT.md`. |
 | `GET /api/contracts/current` | Returns the current contract markdown text. |
 | `POST /api/contracts/regenerate` | Writes new contract content to `ai/AI_TASK_MONITOR_CONTRACT.md`. |
 | `GET /api/contracts/prompts` | Fetches the active prompt template JSON. |
 | `POST /api/contracts/prompts` | Stores prompt template JSON validated via `schemas/prompt_template.json`. |
+| `GET /api/prompts/blueprints` | Lists prompt blueprint metadata for the UI’s picker. |
+| `POST /api/prompts/generate` | Renders a blueprint with supplied variables (defaults to dry-run/non-persisting). |
+| `POST /api/features/plan` | Wraps the `task_creation` blueprint to produce feasibility plans + the next task ID. |
 
 ## 3. Architecture
 - `createApp(config)` builds the Express app and injects a `FileAccess` instance.
@@ -43,11 +46,13 @@ npm install
 START_SERVER=true PORT=3001 npm run dev
 curl http://localhost:3001/api/tasks
 ```
-- To scaffold tasks via API: `POST /api/tasks` with `{ "taskId": "TASK_010_example", "title": "...", "description": "..." }`.
-- To toggle checklist line 5: `PATCH /api/tasks/TASK_010_example/checklist` body `{ "line": 5, "checked": true }`.
-- To append log: `POST /api/tasks/TASK_010_example/logs` body contains `ts`, `event`, `status`, `agent`, `details`.
-- To fetch the contract for the UI editor: `GET /api/contracts/current`.
-- To fetch the active prompt template before editing: `GET /api/contracts/prompts`.
+- Create a task: `POST /api/tasks` with `{ "title": "New feature", "description": "context", "priority": "high" }`; the server assigns the next `TASK_###`.
+- Reorder the backlog: `PATCH /api/tasks/order` with `{ "order": ["TASK_009...", "TASK_008...", ...] }` (mirrors the drag-and-drop UI and updates `ai/tasks/order.json`).
+- Toggle a checklist line: `PATCH /api/tasks/TASK_010_example/checklist` body `{ "line": 5, "checked": true }`.
+- Append a progress log: `POST /api/tasks/TASK_010_example/logs` with `ts`, `event`, `status`, `agent`, `details`.
+- Generate a feasibility plan: `POST /api/features/plan` with title/summary/inputs/expectedFiles/acceptanceCriteria to run the `task_creation` blueprint (dry-run only).
+- Blueprint dry-run: `POST /api/prompts/generate` with `{ "blueprintId": "structured_checklist", "variables": {...} }` (omit `persist` or set to `false` when using the UI).
+- Contract/Prompt CRUD: `GET/POST /api/contracts/*` as before; `GET /api/prompts/blueprints` backs the blueprint dropdown.
 
 ## 6. Testing
 - Run `npm test` to execute both filesystem and server integration tests.

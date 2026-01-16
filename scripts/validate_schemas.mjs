@@ -205,6 +205,13 @@ progressFiles.forEach((filePath) => validateNdjsonFile(filePath, 'progress_event
 const promptTemplates = [path.join(repoRoot, 'ai', 'templates', 'prompt_template.json')];
 promptTemplates.forEach((filePath) => validateJsonFile(filePath, 'prompt_template.json'));
 
+// Validate prompt blueprints
+const blueprintDir = path.join(repoRoot, 'ai', 'templates', 'prompt_blueprints');
+if (existsSync(blueprintDir)) {
+  const blueprintFiles = walkDir(blueprintDir).filter((filePath) => filePath.endsWith('.json'));
+  blueprintFiles.forEach((filePath) => validateJsonFile(filePath, 'prompt_blueprint.json'));
+}
+
 // Validate Machine Summary Blocks on Markdown files
 const markdownFiles = [
   ...listFilesByExt(path.join(repoRoot, 'docs'), '.md'),

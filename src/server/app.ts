@@ -7,6 +7,8 @@ import { createChecklistRouter } from './routes/checklists';
 import { createLogRouter } from './routes/logs';
 import { createTemplateRouter } from './routes/templates';
 import { createContractRouter } from './routes/contracts';
+import { createPromptGeneratorRouter } from './routes/prompts';
+import { createFeatureRouter } from './routes/features';
 
 export interface AppConfig {
   fileAccess?: FileAccess;
@@ -34,6 +36,8 @@ export function createApp(config: AppConfig = {}) {
   app.use('/api/logs', createLogRouter(fileAccess));
   app.use('/api/templates', createTemplateRouter(fileAccess));
   app.use('/api/contracts', createContractRouter(fileAccess));
+  app.use('/api/prompts', createPromptGeneratorRouter(fileAccess));
+  app.use('/api/features', createFeatureRouter(fileAccess));
 
   app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     if (err instanceof FileAccessError) {

@@ -26,6 +26,8 @@ beforeEach(async () => {
   });
   await seedTemplates();
   await seedTask('TASK_SAMPLE');
+  await seedOrder(['TASK_SAMPLE']);
+  await seedCurrentIndex('TASK_SAMPLE');
 });
 
 afterEach(() => {
@@ -51,18 +53,40 @@ test('creates task from template and toggles checklist', async () => {
   const app = createApp({ fileAccess: ctx.fileAccess });
   const createResponse = await request(app)
     .post('/api/tasks')
-    .send({ taskId: 'TASK_NEW', title: 'New Task', description: 'Demo task' });
+    .send({ title: 'New Task', description: 'Demo task' });
   if (createResponse.status !== 201) {
     throw new Error(`status=${createResponse.status} body=${JSON.stringify(createResponse.body)}`);
   }
+  const createdTaskId = createResponse.body.task?.task_id;
+  assert.equal(createdTaskId, 'TASK_001');
 
   const toggleResponse = await request(app)
-    .patch('/api/tasks/TASK_NEW/checklist')
+    .patch(`/api/tasks/${createdTaskId}/checklist`)
     .send({ line: 5, checked: true });
   if (toggleResponse.status !== 200) {
     throw new Error(`status=${toggleResponse.status} body=${JSON.stringify(toggleResponse.body)}`);
   }
   assert.ok(toggleResponse.body.line.includes('[x]'));
+});
+
+test('reorders tasks via API', async () => {
+  const app = createApp({ fileAccess: ctx.fileAccess });
+  const createResponse = await request(app)
+    .post('/api/tasks')
+    .send({ title: 'Second Task', description: 'Another task' });
+  if (createResponse.status !== 201) {
+    throw new Error(`status=${createResponse.status} body=${JSON.stringify(createResponse.body)}`);
+  }
+  const reorderResponse = await request(app)
+    .patch('/api/tasks/order')
+    .send({ order: ['TASK_001', 'TASK_SAMPLE'] });
+  assert.equal(reorderResponse.status, 200);
+  const listResponse = await request(app).get('/api/tasks');
+  assert.equal(listResponse.status, 200);
+  const ids = listResponse.body.tasks.map((task: Record<string, unknown>) => task.task_id);
+  assert.deepEqual(ids.slice(0, 2), ['TASK_001', 'TASK_SAMPLE']);
+  const currentIndex = await ctx.fileAccess.readJson<Record<string, string>>('ai/tasks/current_index.json');
+  assert.equal(currentIndex.active_task_id, 'TASK_SAMPLE');
 });
 
 test('appends log entry and regenerates contract', async () => {
@@ -163,5 +187,22 @@ async function seedTask(taskId: string) {
       summary: { file: 'ai/templates/prompt_template.json', purpose: 'sample' }
     },
     { schema: 'schemas/prompt_template.json' }
+  );
+}
+
+async function seedOrder(taskIds: string[]) {
+  await ctx.fileAccess.writeJson('ai/tasks/order.json', taskIds, { pretty: true });
+}
+
+async function seedCurrentIndex(taskId: string) {
+  await ctx.fileAccess.writeJson(
+    'ai/tasks/current_index.json',
+    {
+      active_task_id: taskId,
+      task_path: `ai/tasks/${taskId}`,
+      status: 'pending',
+      last_updated: new Date().toISOString()
+    },
+    { pretty: true }
   );
 }

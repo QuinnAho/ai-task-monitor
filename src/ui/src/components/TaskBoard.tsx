@@ -1,38 +1,133 @@
-import type { FormEvent } from 'react'
+
+import type { DragEvent, FormEvent } from 'react'
 import { useMemo, useState } from 'react'
 import type { TaskSummary } from '../hooks/useTasks'
 import { useTasks, useCreateTask } from '../hooks/useTasks'
 
+function ordersMatch(a: string[], b: string[]) {
+  if (a.length !== b.length) {
+    return false
+  }
+  return a.every((value, index) => value === b[index])
+}
+
 function TaskBoard() {
-  const { tasks, selectTask, activeTaskId, isLoading } = useTasks()
+  const { tasks, selectTask, activeTaskId, isLoading, reorderTasks, isReordering } = useTasks()
   const [filter, setFilter] = useState('')
-  const [form, setForm] = useState({ taskId: '', title: '', description: '' })
+  const [form, setForm] = useState({ title: '', description: '' })
+  const [previewOrder, setPreviewOrder] = useState<string[] | null>(null)
+  const [draggingTaskId, setDraggingTaskId] = useState<string | null>(null)
   const createTask = useCreateTask((taskId) => {
-    setForm({ taskId: '', title: '', description: '' })
+    setForm({ title: '', description: '' })
     selectTask(taskId)
   })
 
-  const filteredTasks = useMemo(() => {
-    if (!filter) return tasks
-    return tasks.filter((task) => {
-      const title = String(task.title ?? '')
+  const orderedIds = useMemo(
+    () => tasks.map((task) => String(task.task_id ?? '')).filter((id) => id.length > 0),
+    [tasks]
+  )
+  const activeOrder = previewOrder ?? orderedIds
+
+  const orderedTasks = useMemo(() => {
+    if (tasks.length === 0) {
+      return []
+    }
+    const map = new Map<string, TaskSummary>()
+    tasks.forEach((task) => {
       const id = String(task.task_id ?? '')
-      return (
-        title.toLowerCase().includes(filter.toLowerCase()) ||
-        id.toLowerCase().includes(filter.toLowerCase())
-      )
+      if (id) {
+        map.set(id, task)
+      }
     })
-  }, [tasks, filter])
+    const arranged: TaskSummary[] = []
+    activeOrder.forEach((taskId) => {
+      const summary = map.get(taskId)
+      if (summary) {
+        arranged.push(summary)
+        map.delete(taskId)
+      }
+    })
+    map.forEach((summary) => arranged.push(summary))
+    return arranged
+  }, [tasks, activeOrder])
+
+  const filteredTasks = useMemo(() => {
+    if (!filter) return orderedTasks
+    const needle = filter.toLowerCase()
+    return orderedTasks.filter((task) => {
+      const title = String(task.title ?? '').toLowerCase()
+      const id = String(task.task_id ?? '').toLowerCase()
+      return title.includes(needle) || id.includes(needle)
+    })
+  }, [orderedTasks, filter])
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault()
-    if (!form.taskId || !form.title) return
-    createTask.mutate({ ...form })
+    if (!form.title.trim()) {
+      return
+    }
+    createTask.mutate({ title: form.title.trim(), description: form.description })
+  }
+
+  const updatePreview = (nextOrder: string[]) => {
+    const currentOrder = previewOrder ?? orderedIds
+    if (ordersMatch(currentOrder, nextOrder)) {
+      return
+    }
+    setPreviewOrder(nextOrder)
+  }
+
+  const handleDragStart = (taskId: string) => (event: DragEvent<HTMLLIElement>) => {
+    setDraggingTaskId(taskId)
+    event.dataTransfer.effectAllowed = 'move'
+    event.dataTransfer.setData('text/plain', taskId)
+  }
+
+  const handleDragOverTask = (taskId: string) => (event: DragEvent<HTMLLIElement>) => {
+    event.preventDefault()
+    if (!draggingTaskId || draggingTaskId === taskId) return
+    const currentOrder = previewOrder ?? orderedIds
+    const withoutDragging = currentOrder.filter((id) => id !== draggingTaskId)
+    const targetIndex = withoutDragging.indexOf(taskId)
+    if (targetIndex === -1) return
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
+    const shouldPlaceAfter = event.clientY - rect.top > rect.height / 2
+    const insertIndex = shouldPlaceAfter ? targetIndex + 1 : targetIndex
+    const nextOrder = [...withoutDragging]
+    nextOrder.splice(Math.max(0, Math.min(nextOrder.length, insertIndex)), 0, draggingTaskId)
+    updatePreview(nextOrder)
+  }
+
+  const moveDraggingToEnd = () => {
+    if (!draggingTaskId) return
+    const currentOrder = previewOrder ?? orderedIds
+    if (currentOrder.length === 0) return
+    if (!currentOrder.includes(draggingTaskId)) return
+    const withoutDragging = currentOrder.filter((id) => id !== draggingTaskId)
+    if (currentOrder[currentOrder.length - 1] === draggingTaskId) return
+    updatePreview([...withoutDragging, draggingTaskId])
+  }
+
+  const finalizeReorder = () => {
+    if (previewOrder && !ordersMatch(previewOrder, orderedIds)) {
+      reorderTasks(previewOrder)
+    }
+    setPreviewOrder(null)
+    setDraggingTaskId(null)
+  }
+
+  const cancelDrag = () => {
+    setPreviewOrder(null)
+    setDraggingTaskId(null)
   }
 
   return (
     <div className="panel">
-      <div className="panel-header">
+      <div className="panel-header tasks-panel-header">
+        <div className="tasks-header">
+          <h2>Tasks</h2>
+          <p className="tasks-hint">AI works top-to-bottom. Drag tasks so high-priority work stays at the top.</p>
+        </div>
         <input
           placeholder="Search tasks"
           value={filter}
@@ -42,7 +137,14 @@ function TaskBoard() {
       {isLoading ? (
         <div>Loading tasks...</div>
       ) : (
-        <ul className="task-list">
+        <ul
+          className="task-list"
+          onDragOver={(event) => event.preventDefault()}
+          onDrop={(event) => {
+            event.preventDefault()
+            finalizeReorder()
+          }}
+        >
           {filteredTasks.map((task) => {
             const summary = task as TaskSummary
             const taskId = summary.task_id as string
@@ -51,7 +153,8 @@ function TaskBoard() {
             const cardClass = [
               'task-card',
               taskId === activeTaskId ? 'active' : '',
-              isComplete ? 'completed' : ''
+              isComplete ? 'completed' : '',
+              draggingTaskId === taskId ? 'dragging' : ''
             ]
               .filter(Boolean)
               .join(' ')
@@ -64,12 +167,23 @@ function TaskBoard() {
                 key={taskId}
                 className={cardClass}
                 onClick={() => selectTask(taskId)}
+                draggable={!isReordering}
+                onDragStart={handleDragStart(taskId)}
+                onDragOver={handleDragOverTask(taskId)}
+                onDrop={(event) => {
+                  event.preventDefault()
+                  event.stopPropagation()
+                  finalizeReorder()
+                }}
+                onDragEnd={cancelDrag}
               >
-                <div>
-                  <strong>{summary.title}</strong>
-                  <div className="task-meta-line">{taskId}</div>
+                <div className="task-card-main">
+                  <div>
+                    <strong>{summary.title}</strong>
+                    <div className="task-meta-line">{taskId}</div>
+                  </div>
+                  <span className={badgeClass}>{priority || 'N/A'}</span>
                 </div>
-                <span className={badgeClass}>{priority || 'N/A'}</span>
                 {isComplete && (
                   <div className="completion-overlay" aria-hidden="true">
                     <span>Finished</span>
@@ -78,16 +192,27 @@ function TaskBoard() {
               </li>
             )
           })}
+          {draggingTaskId && (
+            <li
+              className="task-drop-zone"
+              onDragOver={(event) => {
+                event.preventDefault()
+                moveDraggingToEnd()
+              }}
+              onDrop={(event) => {
+                event.preventDefault()
+                event.stopPropagation()
+                finalizeReorder()
+              }}
+            >
+              Drop here to move task to the bottom
+            </li>
+          )}
         </ul>
       )}
 
       <form className="creation-form" onSubmit={handleSubmit}>
         <h3>Create Task</h3>
-        <input
-          placeholder="Task ID (e.g., TASK_010_ui)"
-          value={form.taskId}
-          onChange={(e) => setForm((prev) => ({ ...prev, taskId: e.target.value }))}
-        />
         <input
           placeholder="Title"
           value={form.title}

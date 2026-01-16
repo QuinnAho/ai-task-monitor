@@ -22,17 +22,13 @@ function TaskDetail() {
         <span>Priority: {task.priority}</span>
         <span>Created: {task.created}</span>
       </div>
-      <section>
-        <h3>Checklist</h3>
-        <ChecklistPanel lines={checklistLines} taskId={task.task_id as string} />
-      </section>
-      <section>
+      <section className="task-section task-section-progress">
         <h3>Progress Log</h3>
         <LogTimeline entries={progress} />
       </section>
-      <section>
-        <h3>Task JSON</h3>
-        <pre className="json-editor">{JSON.stringify(task, null, 2)}</pre>
+      <section className="task-section task-section-checklist">
+        <h3>Checklist</h3>
+        <ChecklistPanel lines={checklistLines} taskId={task.task_id as string} />
       </section>
     </div>
   )

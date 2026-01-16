@@ -3,14 +3,18 @@ import TaskBoard from '../components/TaskBoard'
 import TaskDetail from '../components/TaskDetail'
 import ContractEditor from '../components/ContractEditor'
 import PromptEditor from '../components/PromptEditor'
+import FeaturePlanner from '../components/FeaturePlanner'
 import '../styles/layout.css'
 
 const MIN_PANEL_WIDTH = 220
 const MAX_PANEL_WIDTH = 520
+const HANDLE_WIDTH = 28
 
 function App() {
   const [sidebarWidth, setSidebarWidth] = useState(280)
   const [secondaryWidth, setSecondaryWidth] = useState(320)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [secondaryCollapsed, setSecondaryCollapsed] = useState(false)
 
   const clamp = (value: number) => Math.min(Math.max(value, MIN_PANEL_WIDTH), MAX_PANEL_WIDTH)
 
@@ -43,37 +47,83 @@ function App() {
     [sidebarWidth, secondaryWidth]
   )
 
+  const toggleSidebar = () => setSidebarCollapsed((prev) => !prev)
+  const toggleSecondary = () => setSecondaryCollapsed((prev) => !prev)
+
+  const layoutColumns = [
+    sidebarCollapsed ? '0px' : `${sidebarWidth}px`,
+    `${HANDLE_WIDTH}px`,
+    '1fr',
+    `${HANDLE_WIDTH}px`,
+    secondaryCollapsed ? '0px' : `${secondaryWidth}px`
+  ].join(' ')
+
   return (
     <div
       className="app-layout"
       style={{
-        gridTemplateColumns: `${sidebarWidth}px 6px 1fr 6px ${secondaryWidth}px`
+        gridTemplateColumns: layoutColumns
       }}
     >
-      <aside className="sidebar">
-        <div className="sidebar-section">
-          <h2>Tasks</h2>
-          <TaskBoard />
-        </div>
+      <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
+        {!sidebarCollapsed && (
+          <div className="sidebar-section">
+            <div className="panel-header">
+              <h2>Tasks</h2>
+            </div>
+            <TaskBoard />
+          </div>
+        )}
       </aside>
       <div
-        className="resize-handle"
+        className={`resize-handle left-handle ${sidebarCollapsed ? 'is-collapsed' : ''}`}
         role="separator"
         aria-orientation="vertical"
-        onMouseDown={beginResize('sidebar')}
-      />
+        onMouseDown={!sidebarCollapsed ? beginResize('sidebar') : undefined}
+      >
+        <button
+          type="button"
+          className="collapse-toggle"
+          aria-label={sidebarCollapsed ? 'Show task panel' : 'Hide task panel'}
+          onClick={(event) => {
+            event.stopPropagation()
+            toggleSidebar()
+          }}
+        >
+          {sidebarCollapsed ? '▶' : '◀'}
+        </button>
+      </div>
       <main className="main-section">
         <TaskDetail />
       </main>
       <div
-        className="resize-handle"
+        className={`resize-handle right-handle ${secondaryCollapsed ? 'is-collapsed' : ''}`}
         role="separator"
         aria-orientation="vertical"
-        onMouseDown={beginResize('secondary')}
-      />
-      <aside className="secondary-panel">
-        <ContractEditor />
-        <PromptEditor />
+        onMouseDown={!secondaryCollapsed ? beginResize('secondary') : undefined}
+      >
+        {!secondaryCollapsed && (
+          <button
+            type="button"
+            className="collapse-toggle"
+            aria-label={secondaryCollapsed ? 'Show editor panel' : 'Hide editor panel'}
+            onClick={(event) => {
+              event.stopPropagation()
+              toggleSecondary()
+            }}
+          >
+            {secondaryCollapsed ? '◀' : '▶'}
+          </button>
+        )}
+      </div>
+      <aside className={`secondary-panel ${secondaryCollapsed ? 'collapsed' : ''}`}>
+        {!secondaryCollapsed && (
+          <>
+            <FeaturePlanner />
+            <ContractEditor />
+            <PromptEditor />
+          </>
+        )}
       </aside>
     </div>
   )

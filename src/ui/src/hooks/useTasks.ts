@@ -31,32 +31,62 @@ export function useTasks() {
     queryClient.invalidateQueries({ queryKey: ['task-detail', taskId] })
   }
 
+  const appendReorderLog = async (order: string[]) => {
+    if (!activeTaskId) return
+    try {
+      await axios.post(`/api/tasks/${activeTaskId}/logs`, {
+        ts: new Date().toISOString(),
+        event: 'step_completed',
+        status: 'success',
+        agent: 'task_board',
+        details: `Reordered tasks -> ${order.join(', ')}`
+      })
+    } catch (error) {
+      console.error('Failed to append reorder log', error)
+    }
+  }
+
+  const reorderMutation = useMutation({
+    mutationFn: async (order: string[]) => {
+      if (!order || order.length === 0) {
+        throw new Error('Order must include at least one task id.')
+      }
+      await axios.patch('/api/tasks/order', { order })
+      return order
+    },
+    onSuccess: async (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] })
+      if (Array.isArray(variables) && variables.length > 0) {
+        await appendReorderLog(variables)
+      }
+    },
+    onError: (err: unknown) => {
+      console.error(err)
+    }
+  })
+
   return {
     tasks: tasksQuery.data ?? [],
     isLoading: tasksQuery.isLoading,
     error: tasksQuery.error,
     selectTask,
-    activeTaskId
+    activeTaskId,
+    reorderTasks: (order: string[]) => reorderMutation.mutate(order),
+    isReordering: reorderMutation.isPending
   }
-}
-
-interface CreateTaskPayload {
-  taskId: string
-  title: string
-  description: string
 }
 
 export function useCreateTask(onCreated?: (taskId: string) => void) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (payload: CreateTaskPayload) => {
-      await axios.post('/api/tasks', payload)
-      return payload
+    mutationFn: async (payload: { title: string; description: string; priority?: string }) => {
+      const response = await axios.post('/api/tasks', payload)
+      return response.data.task
     },
-    onSuccess: (data) => {
+    onSuccess: (task) => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] })
-      if (data?.taskId) {
-        onCreated?.(data.taskId)
+      if (task?.task_id) {
+        onCreated?.(task.task_id as string)
       }
     }
   })

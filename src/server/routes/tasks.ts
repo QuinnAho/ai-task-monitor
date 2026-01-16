@@ -6,12 +6,13 @@ import {
   createTaskFromTemplate,
   getTaskDetail,
   listTasks,
-  toggleChecklistLine
+  toggleChecklistLine,
+  getNextTaskId,
+  reorderTaskList
 } from '../lib/taskStore';
 import { appendProgressEntry } from '../lib/taskStore';
 
 const TaskCreateSchema = z.object({
-  taskId: z.string().regex(/^TASK_[A-Za-z0-9_\-]+$/),
   title: z.string().min(1),
   description: z.string().min(1),
   priority: z.string().optional()
@@ -28,6 +29,10 @@ const ProgressAppendSchema = z.object({
   status: z.string().min(1),
   agent: z.string().min(1),
   details: z.string().min(1)
+});
+
+const TaskReorderSchema = z.object({
+  order: z.array(z.string().min(1)).min(1)
 });
 
 export function createTaskRouter(fileAccess: FileAccess) {
@@ -58,15 +63,16 @@ export function createTaskRouter(fileAccess: FileAccess) {
   router.post('/', async (req, res, next) => {
     try {
       const payload = TaskCreateSchema.parse(req.body);
+      const taskId = await getNextTaskId(fileAccess);
       const overrides = {
-        task_id: payload.taskId,
+        task_id: taskId,
         title: payload.title,
         description: payload.description,
         priority: payload.priority ?? 'medium',
         status: 'pending',
         created: new Date().toISOString()
       };
-      const task = await createTaskFromTemplate(fileAccess, payload.taskId, overrides);
+      const task = await createTaskFromTemplate(fileAccess, taskId, overrides);
       res.status(201).json({ task });
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -99,6 +105,24 @@ export function createTaskRouter(fileAccess: FileAccess) {
     } catch (error) {
       if (error instanceof z.ZodError) {
         res.status(400).json({ error: error.errors });
+        return;
+      }
+      next(error);
+    }
+  });
+
+  router.patch('/order', async (req, res, next) => {
+    try {
+      const payload = TaskReorderSchema.parse(req.body);
+      await reorderTaskList(fileAccess, payload.order);
+      res.status(200).json({ status: 'reordered' });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: error.errors });
+        return;
+      }
+      if (error instanceof FileAccessError && error.code === 'VALIDATION_FAILED') {
+        res.status(400).json({ error: error.message });
         return;
       }
       next(error);
