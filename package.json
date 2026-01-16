@@ -8,6 +8,7 @@
     "test": "tsx --tsconfig tsconfig.json src/tests/run-all-tests.ts",
     "generate:task": "tsx --tsconfig tsconfig.json scripts/generate_task_from_template.ts",
     "generate:prompt": "tsx --tsconfig tsconfig.json scripts/generate_structured_prompt.ts",
+    "log:diff": "tsx --tsconfig tsconfig.json scripts/log_diff_preview.ts",
     "init:workflow": "tsx --tsconfig tsconfig.json scripts/init_feature_workflow.ts",
     "dev": "tsx --tsconfig tsconfig.json src/server/start.ts",
     "ui:dev": "npm --prefix src/ui run dev",

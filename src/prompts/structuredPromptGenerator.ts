@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { FileAccess } from '../fs/fileAccess';
 import { appendProgressEntry } from '../server/lib/taskStore';
+import { captureDiffSnapshot } from '../server/lib/gitDiff';
 
 const BLUEPRINT_DIR = 'ai/templates/prompt_blueprints';
 const CURRENT_INDEX_PATH = 'ai/tasks/current_index.json';
@@ -187,6 +188,7 @@ async function logGeneration(
     event: 'step_completed',
     status: 'success',
     agent: 'structured_prompt_generator',
-    details: `Blueprint ${details.blueprintId} generated prompt${details.persist ? ` -> ${details.outputPath}` : ''}`
+    details: `Blueprint ${details.blueprintId} generated prompt${details.persist ? ` -> ${details.outputPath}` : ''}`,
+    diff: captureDiffSnapshot()
   });
 }

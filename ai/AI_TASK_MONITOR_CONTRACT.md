@@ -47,6 +47,7 @@
   - `ts`, `task_id`, `event`, `status`, `agent`.
   Events: `task_started`, `step_completed`, `step_failed`, `acceptance_failed`, `task_completed`, `blocker_encountered`.
   Keep entries concise and chronological.
+  - Include a `details` string plus an optional `diff` object (`summary` required; `files`/`patch`/`commit` as available) so remote reviewers can see what changed for every step.
 
   ## 7. Engineering Rules
   - Follow SOLID; keep interfaces small and purpose-built.
@@ -87,6 +88,7 @@
   - `progress.ndjson` has `task_completed`.
   - No validation rules violated.
   - Remote snapshot published (if task affects monitored data).
+  - A git commit captures the finished work, using the task module's title/description as the commit message so humans can trace the change.
 
   ## 13. AI Role Summary
   The AI is:

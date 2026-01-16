@@ -9,6 +9,7 @@ Every AI agent working in this repo reads it's `ai/AI_*_CONTRACT.md`, follows it
 - `npm install` at repo root (installs backend + script deps).  
 - `npm run dev` starts the backend on http://localhost:3000.  
 - `npm run ui:dev` (in another terminal) launches the Vite client on http://localhost:5173 with `/api` proxied to the backend.
+- See `docs/feature_workflow.md` for the feasibility-first workflow, `docs/task_reordering.md` for how the backlog order is enforced, and `docs/log_diff_strategy.md` for the diff payload requirement on every progress entry.
 
 ##
 

@@ -3,7 +3,7 @@
   "title": "Show diffs for progress log notes",
   "description": "Enhance the progress.ndjson pipeline so that every logged event includes a short code diff summary (or equivalent indicator) of the work performed, giving remote reviewers immediate insight into what changed at each step.",
   "created": "2026-01-12T00:00:00Z",
-  "status": "pending",
+  "status": "completed",
   "priority": "high",
   "inputs": {
     "files": [

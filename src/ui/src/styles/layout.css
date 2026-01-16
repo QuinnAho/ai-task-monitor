@@ -317,6 +317,68 @@ select {
   color: #555;
 }
 
+.log-diff {
+  background-color: #f6f6f6;
+  border-left: 3px solid #c4c4c4;
+  padding: 0.5rem 0.75rem;
+  margin-top: 0.4rem;
+  border-radius: 4px;
+}
+
+.log-diff-summary {
+  margin: 0 0 0.35rem 0;
+  font-size: 0.85rem;
+  color: #333;
+}
+
+.log-diff-files {
+  font-size: 0.8rem;
+  margin-bottom: 0.35rem;
+}
+
+.log-diff-files ul {
+  margin: 0.25rem 0 0 1.25rem;
+  padding: 0;
+}
+
+.log-diff-commit {
+  font-size: 0.8rem;
+  margin-bottom: 0.35rem;
+}
+
+.log-diff-patch summary {
+  cursor: pointer;
+  color: #0050b3;
+  font-size: 0.8rem;
+}
+
+.log-diff-patch-body {
+  margin: 0.35rem 0 0 0;
+  background-color: #111;
+  color: #f6f6f6;
+  padding: 0.5rem;
+  border-radius: 4px;
+  overflow-x: auto;
+  font-size: 0.75rem;
+}
+
+.log-diff-line {
+  display: block;
+  white-space: pre;
+}
+
+.log-diff-line.add {
+  color: #1a7f37;
+}
+
+.log-diff-line.del {
+  color: #d93025;
+}
+
+.log-diff-line.meta {
+  color: #7f91ff;
+}
+
 .checklist {
   list-style: none;
   padding: 0;

@@ -17,7 +17,7 @@
 | `POST /api/tasks` | Clones template files, auto-assigns the next `TASK_###`, and applies the provided title/description/priority. |
 | `PATCH /api/tasks/:taskId/checklist` | Toggles a checklist line, ensuring `[x]/[ ]` substitution. |
 | `PATCH /api/tasks/order` | Persists a new ordering array (validated against existing IDs) to `ai/tasks/order.json`. |
-| `POST /api/tasks/:taskId/logs` | Appends NDJSON entries validated against `schemas/progress_event.json`. |
+| `POST /api/tasks/:taskId/logs` | Appends NDJSON entries validated against `schemas/progress_event.json` and auto-captures a diff summary/patch (see `docs/log_diff_strategy.md`). |
 | `GET /api/checklists/:taskId` | Fetches raw checklist text. |
 | `GET /api/logs/:taskId` | Returns parsed NDJSON log entries. |
 | `GET /api/templates` | Lists available task templates. |
@@ -49,7 +49,8 @@ curl http://localhost:3001/api/tasks
 - Create a task: `POST /api/tasks` with `{ "title": "New feature", "description": "context", "priority": "high" }`; the server assigns the next `TASK_###`.
 - Reorder the backlog: `PATCH /api/tasks/order` with `{ "order": ["TASK_009...", "TASK_008...", ...] }` (mirrors the drag-and-drop UI and updates `ai/tasks/order.json`).
 - Toggle a checklist line: `PATCH /api/tasks/TASK_010_example/checklist` body `{ "line": 5, "checked": true }`.
-- Append a progress log: `POST /api/tasks/TASK_010_example/logs` with `ts`, `event`, `status`, `agent`, `details`.
+- Append a progress log: `POST /api/tasks/TASK_010_example/logs` with `ts`, `event`, `status`, `agent`, `details`. The backend will attach a diff snapshot automatically (or you can include a custom `diff` payload).
+- Inspect the upcoming diff payload locally: `npm run log:diff` (wraps `scripts/log_diff_preview.ts`) to preview the summary/files/patch that will be stored.
 - Generate a feasibility plan: `POST /api/features/plan` with title/summary/inputs/expectedFiles/acceptanceCriteria to run the `task_creation` blueprint (dry-run only).
 - Blueprint dry-run: `POST /api/prompts/generate` with `{ "blueprintId": "structured_checklist", "variables": {...} }` (omit `persist` or set to `false` when using the UI).
 - Contract/Prompt CRUD: `GET/POST /api/contracts/*` as before; `GET /api/prompts/blueprints` backs the blueprint dropdown.

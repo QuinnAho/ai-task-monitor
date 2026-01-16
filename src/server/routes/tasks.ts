@@ -8,9 +8,10 @@ import {
   listTasks,
   toggleChecklistLine,
   getNextTaskId,
-  reorderTaskList
+  reorderTaskList,
+  appendProgressEntry
 } from '../lib/taskStore';
-import { appendProgressEntry } from '../lib/taskStore';
+import { captureDiffSnapshot } from '../lib/gitDiff';
 
 const TaskCreateSchema = z.object({
   title: z.string().min(1),
@@ -23,12 +24,20 @@ const ChecklistUpdateSchema = z.object({
   checked: z.boolean()
 });
 
+const DiffSchema = z.object({
+  summary: z.string().min(1),
+  files: z.array(z.string().min(1)).max(50).optional(),
+  patch: z.string().max(4000).optional(),
+  commit: z.string().regex(/^[0-9a-f]{7,40}$/).optional()
+});
+
 const ProgressAppendSchema = z.object({
   ts: z.string().min(1),
   event: z.string().min(1),
   status: z.string().min(1),
   agent: z.string().min(1),
-  details: z.string().min(1)
+  details: z.string().min(1),
+  diff: DiffSchema.optional()
 });
 
 const TaskReorderSchema = z.object({
@@ -100,7 +109,16 @@ export function createTaskRouter(fileAccess: FileAccess) {
   router.post('/:taskId/logs', async (req, res, next) => {
     try {
       const payload = ProgressAppendSchema.parse(req.body);
-      await appendProgressEntry(fileAccess, req.params.taskId, { ...payload, task_id: req.params.taskId });
+      const diffPayload =
+        payload.diff ??
+        captureDiffSnapshot({
+          cwd: fileAccess.resolve('.')
+        });
+      await appendProgressEntry(fileAccess, req.params.taskId, {
+        ...payload,
+        task_id: req.params.taskId,
+        diff: diffPayload
+      });
       res.status(201).json({ status: 'appended' });
     } catch (error) {
       if (error instanceof z.ZodError) {
