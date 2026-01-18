@@ -1,8 +1,8 @@
 
-import type { DragEvent, FormEvent } from 'react'
+import type { DragEvent } from 'react'
 import { useMemo, useState } from 'react'
 import type { TaskSummary } from '../hooks/useTasks'
-import { useTasks, useCreateTask } from '../hooks/useTasks'
+import { useTasks } from '../hooks/useTasks'
 
 function ordersMatch(a: string[], b: string[]) {
   if (a.length !== b.length) {
@@ -14,13 +14,8 @@ function ordersMatch(a: string[], b: string[]) {
 function TaskBoard() {
   const { tasks, selectTask, activeTaskId, isLoading, reorderTasks, isReordering } = useTasks()
   const [filter, setFilter] = useState('')
-  const [form, setForm] = useState({ title: '', description: '' })
   const [previewOrder, setPreviewOrder] = useState<string[] | null>(null)
   const [draggingTaskId, setDraggingTaskId] = useState<string | null>(null)
-  const createTask = useCreateTask((taskId) => {
-    setForm({ title: '', description: '' })
-    selectTask(taskId)
-  })
 
   const orderedIds = useMemo(
     () => tasks.map((task) => String(task.task_id ?? '')).filter((id) => id.length > 0),
@@ -60,14 +55,6 @@ function TaskBoard() {
       return title.includes(needle) || id.includes(needle)
     })
   }, [orderedTasks, filter])
-
-  const handleSubmit = (event: FormEvent) => {
-    event.preventDefault()
-    if (!form.title.trim()) {
-      return
-    }
-    createTask.mutate({ title: form.title.trim(), description: form.description })
-  }
 
   const updatePreview = (nextOrder: string[]) => {
     const currentOrder = previewOrder ?? orderedIds
@@ -124,15 +111,14 @@ function TaskBoard() {
   return (
     <div className="panel">
       <div className="panel-header tasks-panel-header">
-        <div className="tasks-header">
-          <h2>Tasks</h2>
-          <p className="tasks-hint">AI works top-to-bottom. Drag tasks so high-priority work stays at the top.</p>
-        </div>
         <input
           placeholder="Search tasks"
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
         />
+        <div className="tasks-header">
+          <p className="tasks-hint">AI works top-to-bottom. Drag tasks so high-priority work stays at the top.</p>
+        </div>
       </div>
       {isLoading ? (
         <div>Loading tasks...</div>
@@ -209,26 +195,10 @@ function TaskBoard() {
             </li>
           )}
         </ul>
-      )}
+      )
+      }
 
-      <form className="creation-form" onSubmit={handleSubmit}>
-        <h3>Create Task</h3>
-        <input
-          placeholder="Title"
-          value={form.title}
-          onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
-        />
-        <textarea
-          placeholder="Description"
-          rows={3}
-          value={form.description}
-          onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
-        />
-        <button className="primary" type="submit" disabled={createTask.isPending}>
-          {createTask.isPending ? 'Creating.' : 'Create Task'}
-        </button>
-      </form>
-    </div>
+    </div >
   )
 }
 

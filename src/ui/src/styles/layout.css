@@ -1,32 +1,74 @@
 .app-layout {
   display: grid;
-  grid-template-columns: 280px 28px 1fr 28px 320px;
+  grid-template-columns: 1fr 8px 1fr 8px 1fr;
   height: 100vh;
   background-color: #f5f5f5;
   color: #1d1d1f;
   font-family: 'Segoe UI', system-ui, sans-serif;
 }
 
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cfcfcf;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #b0b0b0;
+}
+
+
+
 .sidebar,
 .secondary-panel {
   padding: 1rem;
   background-color: #fafafa;
-  border-right: 1px solid #d9d9d9;
+  /* border-right: 1px solid #d9d9d9; removed redundant border */
   overflow-y: auto;
 }
 
 .secondary-panel {
   border-right: none;
-  border-left: 1px solid #d9d9d9;
+  /* border-left: 1px solid #d9d9d9; removed redundant border */
 }
 
 .main-section {
   padding: 1.5rem;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  /* align-items: stretch; */
+  /* Fix for clipping: align to top */
+  align-items: stretch;
+}
+
+/* Reset center alignment when content is present if needed, 
+   but for now assuming main-section mostly holds the empty state or the detail view which fills it. 
+   If TaskDetail needs top alignment, we might need a wrapper. 
+   Let's check if TaskDetail has content that shouldn't be centered. 
+   Start with centering as that was the fix for the empty text. */
+.main-section>* {
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .main-section {
+    min-height: 50vh;
+  }
 }
 
 .resize-handle {
-  background-color: #ededed;
+  background-color: transparent;
   cursor: col-resize;
   position: relative;
   user-select: none;
@@ -38,44 +80,11 @@
 }
 
 .resize-handle::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 1px;
-  background-color: #cfcfcf;
+  content: none;
+  /* removed center line */
 }
 
-.collapse-toggle {
-  border: none;
-  background: #fff;
-  border-radius: 12px;
-  width: 24px;
-  height: 24px;
-  font-size: 0.75rem;
-  cursor: pointer;
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.15s ease-in-out;
-}
-
-.left-handle .collapse-toggle {
-  transform: translateX(-16px);
-}
-
-.left-handle.is-collapsed .collapse-toggle {
-  transform: translateX(0);
-}
-
-.right-handle .collapse-toggle {
-  transform: translateX(10px);
-}
-
-.right-handle.is-collapsed .collapse-toggle {
-  transform: translateX(0);
-}
+/* collapse-toggle styles removed */
 
 .panel {
   background-color: #ffffff;
@@ -83,14 +92,28 @@
   border-radius: 6px;
   padding: 1rem;
   margin-bottom: 1rem;
+  box-sizing: border-box;
+  /* Fix for overflow/overlap */
+}
+
+.panel-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 180px;
+  color: #5c5c5c;
 }
 
 .tasks-panel-header {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+  flex-direction: column;
   gap: 0.75rem;
   margin-bottom: 1rem;
+}
+
+.tasks-panel-header input {
+  min-width: 120px;
 }
 
 .tasks-header {
@@ -103,16 +126,63 @@
   font-size: 0.8rem;
   color: #5c5c5c;
   line-height: 1.2;
+  margin: 0;
 }
 
-.panel section + section {
+.panel section+section {
   margin-top: 1.5rem;
 }
 
-.task-section + .task-section {
+.task-section+.task-section {
+  margin-top: 1.5rem;
+  padding-top: 0;
+}
+
+.task-section-checklist {
+  margin-top: 1.5rem;
+}
+
+.task-section-progress {
   margin-top: 2rem;
-  padding-top: 1rem;
+  padding-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.task-section-content {
+  overflow-y: auto;
+}
+
+.section-resize-handle {
+  position: relative;
+  height: 20px;
+  margin: 1rem 0;
+  cursor: row-resize;
+}
+
+.section-resize-handle::before,
+.section-resize-handle::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.section-resize-handle::before {
   border-top: 1px solid #ededed;
+}
+
+.section-resize-handle::after {
+  width: 56px;
+  margin: 0 auto;
+  border-top: 2px solid #cfcfcf;
+}
+
+.section-resize-handle.is-resizing::after {
+  border-color: #1d1d1f;
 }
 
 .panel h3,
@@ -200,6 +270,7 @@ select {
   border: 1px solid #cfcfcf;
   background-color: #fff;
   color: #1d1d1f;
+  box-sizing: border-box;
 }
 
 .task-list {
@@ -302,8 +373,6 @@ select {
   list-style: none;
   padding: 0;
   margin: 0;
-  max-height: 320px;
-  overflow-y: auto;
 }
 
 .log-item {
@@ -353,7 +422,8 @@ select {
 }
 
 .log-diff-patch-body {
-  margin: 0.35rem 0 0 0;
+  margin: 0.75rem 0 0 0;
+  /* increased margin to fix clipping */
   background-color: #111;
   color: #f6f6f6;
   padding: 0.5rem;
@@ -410,13 +480,6 @@ select {
   padding: 0.6rem;
 }
 
-.creation-form {
-  margin-top: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
 .task-meta-line {
   color: #555;
   font-size: 0.8rem;
@@ -442,8 +505,53 @@ select {
   max-height: 220px;
   overflow-y: auto;
   font-size: 0.85rem;
+  /* Fix for horizontal overflow */
+  overflow-wrap: break-word;
+  word-break: break-all;
 }
 
 .plan-preview {
   margin-top: 0.75rem;
+}
+
+/* Responsive Layout Fixes - Moved to end for specificity */
+@media (max-width: 1024px) {
+  .app-layout {
+    grid-template-columns: 200px 8px 1fr 8px 250px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-layout {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    overflow-y: auto;
+  }
+
+  .resize-handle {
+    display: none;
+  }
+
+  .sidebar,
+  .secondary-panel {
+    width: 100%;
+    height: auto;
+    border: none;
+    border-bottom: 1px solid #d9d9d9;
+    max-height: 400px;
+    /* Limit height in stacked mode */
+  }
+
+  .main-section {
+    min-height: 50vh;
+  }
+
+  /* Fix for clipping on mobile (scoped) */
+  input,
+  textarea,
+  select {
+    flex: 1;
+    min-width: 0;
+  }
 }

@@ -7,12 +7,12 @@ import FeaturePlanner from '../components/FeaturePlanner'
 import '../styles/layout.css'
 
 const MIN_PANEL_WIDTH = 220
-const MAX_PANEL_WIDTH = 520
-const HANDLE_WIDTH = 28
+const MAX_PANEL_WIDTH = 800
+const HANDLE_WIDTH = 8
 
 function App() {
-  const [sidebarWidth, setSidebarWidth] = useState(280)
-  const [secondaryWidth, setSecondaryWidth] = useState(320)
+  const [sidebarWidth, setSidebarWidth] = useState((window.innerWidth - 16) / 3)
+  const [secondaryWidth, setSecondaryWidth] = useState((window.innerWidth - 16) / 3)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [secondaryCollapsed, setSecondaryCollapsed] = useState(false)
 
@@ -81,17 +81,6 @@ function App() {
         aria-orientation="vertical"
         onMouseDown={!sidebarCollapsed ? beginResize('sidebar') : undefined}
       >
-        <button
-          type="button"
-          className="collapse-toggle"
-          aria-label={sidebarCollapsed ? 'Show task panel' : 'Hide task panel'}
-          onClick={(event) => {
-            event.stopPropagation()
-            toggleSidebar()
-          }}
-        >
-          {sidebarCollapsed ? '▶' : '◀'}
-        </button>
       </div>
       <main className="main-section">
         <TaskDetail />
@@ -102,19 +91,6 @@ function App() {
         aria-orientation="vertical"
         onMouseDown={!secondaryCollapsed ? beginResize('secondary') : undefined}
       >
-        {!secondaryCollapsed && (
-          <button
-            type="button"
-            className="collapse-toggle"
-            aria-label={secondaryCollapsed ? 'Show editor panel' : 'Hide editor panel'}
-            onClick={(event) => {
-              event.stopPropagation()
-              toggleSecondary()
-            }}
-          >
-            {secondaryCollapsed ? '◀' : '▶'}
-          </button>
-        )}
       </div>
       <aside className={`secondary-panel ${secondaryCollapsed ? 'collapsed' : ''}`}>
         {!secondaryCollapsed && (

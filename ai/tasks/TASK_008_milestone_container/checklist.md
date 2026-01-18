@@ -4,7 +4,7 @@
 # Task Checklist: TASK_008_milestone_container
 
 ## Pre-execution
-- [ ] Review ai/AI_TASK_MONITOR_CONTRACT.md to align milestone QA requirements with existing completion rules
+- [x] Review ai/AI_TASK_MONITOR_CONTRACT.md to align milestone QA requirements with existing completion rules
 - [ ] Inventory current task list flows (server + UI) to understand where milestones integrate
 - [ ] Define milestone data model (fields, storage path, schema dependencies)
 
@@ -27,3 +27,4 @@
 - [ ] All checklist boxes checked
 - [ ] progress.ndjson appended with `task_completed` referencing milestone QA
 - [ ] Active milestone sample demonstrates QA workflow end-to-end
+
